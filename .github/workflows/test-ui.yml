@@ -22,8 +22,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # ubuntu-latest ships Chrome and Firefox out of the box. Edge needs an explicit
-        # setup step (below). Safari is deliberately excluded: it doesn't run on Linux.
+        # ubuntu-latest ships Chrome out of the box, but its pre-installed Firefox is a
+        # snap package that reliably fails to launch under Selenium automation (snap
+        # confinement blocks the profile/session setup) - install a real binary instead
+        # (below). Edge needs its own explicit setup step too. Safari is deliberately
+        # excluded: it doesn't run on Linux.
         browser: [chrome, firefox, edge]
 
     steps:
@@ -36,6 +39,10 @@ jobs:
           java-version: '21'
           distribution: 'temurin'
           cache: gradle
+
+      - name: Set up Firefox
+        if: matrix.browser == 'firefox'
+        uses: browser-actions/setup-firefox@v1
 
       - name: Set up Microsoft Edge
         if: matrix.browser == 'edge'

@@ -36,6 +36,12 @@ jobs:
           distribution: 'temurin'
           cache: gradle
 
+      # ubuntu-latest's pre-installed Firefox is a snap package that reliably fails to
+      # launch under Selenium automation (snap confinement blocks profile/session setup) -
+      # install a real binary instead.
+      - name: Set up Firefox
+        uses: browser-actions/setup-firefox@v1
+
       - name: Set up Microsoft Edge
         uses: browser-actions/setup-edge@v1
 
