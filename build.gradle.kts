@@ -66,6 +66,14 @@ tasks.test {
     jvmArgs("-javaagent:${agent.singleFile}")
     systemProperty("browser", System.getProperty("browser", "chrome"))
     systemProperty("environment", System.getProperty("environment", "dev"))
+    // The `test` task runs in a forked JVM, which does NOT automatically inherit -D flags
+    // passed on the `./gradlew` command line - only properties explicitly registered here
+    // via systemProperty(...) reach test code. Forward every `-Dbrowser.*` override (e.g.
+    // browser.chrome.headless=true from CI) so BaseWebTest/BrowserConfig actually see them,
+    // instead of always silently falling back to the application.properties default.
+    System.getProperties().stringPropertyNames()
+        .filter { it.startsWith("browser.") }
+        .forEach { key -> systemProperty(key, System.getProperty(key)) }
     outputs.upToDateWhen { false }
 }
 
