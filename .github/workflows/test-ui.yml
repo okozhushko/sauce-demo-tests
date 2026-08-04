@@ -30,10 +30,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v7
 
-      - name: Set up JDK 17
+      - name: Set up JDK 21
         uses: actions/setup-java@v5
         with:
-          java-version: '17'
+          java-version: '21'
           distribution: 'temurin'
           cache: gradle
 
@@ -44,18 +44,17 @@ jobs:
       - name: Compile and assemble (skip tests)
         run: ./gradlew build -x test
 
-      # NOTE: src/test/resources/testng/testng-parallel.xml currently hard-codes a
-      # <parameter name="browser"> per <test> block (chrome/firefox/edge) and runs them
-      # concurrently within a single suite (parallel="tests"). The -Dbrowser value below
-      # only narrows execution to this matrix leg's browser if BaseWebTest resolves the
-      # browser from the system property as a fallback/override to that suite parameter.
-      # Confirm this with whoever owns BaseWebTest/Config -- otherwise every matrix leg
-      # will simply re-run all three browsers instead of just its own.
+      # testng-ui.xml is UI-only and deliberately has no hard-coded
+      # <parameter name="browser">, so BaseWebTest falls back to this -Dbrowser system
+      # property per matrix leg -- each leg runs the UI suite against exactly one browser.
+      # -Dbrowser.<name>.headless=true is required: ubuntu-latest has no X server, so a
+      # non-headless browser launch fails outright here even though it works fine locally.
       - name: Run UI tests (${{ matrix.browser }})
         run: >
           ./gradlew test
           -Dbrowser=${{ matrix.browser }}
-          -Dtestng.suites=src/test/resources/testng/testng-parallel.xml
+          -Dbrowser.${{ matrix.browser }}.headless=true
+          -Dtestng.suites=src/test/resources/testng/testng-ui.xml
 
       - name: Generate Allure report
         if: always()

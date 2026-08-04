@@ -12,6 +12,12 @@ build/
 allure-results/
 allure-report/
 
+# Playwright MCP scratch session artifacts
+.playwright-mcp/
+
+# Claude Code local session state
+.claude/
+
 # OS
 .DS_Store
 

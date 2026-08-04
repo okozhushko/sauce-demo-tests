@@ -15,7 +15,7 @@ A modular Java test automation framework for UI and API testing, built on Seleni
 
 ## Prerequisites
 
-- JDK 17+
+- JDK 21+
 - Chrome/Firefox installed locally for UI test runs (driver binaries are fetched automatically by WebDriverManager)
 
 ## Getting started
@@ -89,13 +89,12 @@ Base settings live in `src/test/resources/properties/application.properties`. Pe
 
 Three GitHub Actions workflows under `.github/workflows/`:
 
-- `test-ui.yml` — UI tests on push/PR to `main`/`develop`, matrixed across browsers
+- `test-ui.yml` — UI tests on push/PR to `main`/`develop`, matrixed across browsers (chrome/firefox/edge, one gradle run per browser against `testng-ui.xml`)
 - `test-api.yml` — API tests on push/PR to `main`/`develop`
-- `parallel-tests.yml` — cross-browser parallel run on push/PR plus a nightly schedule
+- `parallel-tests.yml` — full cross-browser regression via `testng-parallel.xml` in a single job (that suite already runs chrome+firefox+edge together); nightly (02:00 UTC) + manual dispatch only, not on push/PR, to avoid duplicating `test-ui.yml`'s coverage
 
 Each workflow uploads the generated Allure report as a build artifact.
 
 ## Conventions
 
 See [`CLAUDE.md`](./CLAUDE.md) for naming, layout, and contribution conventions.
-# Java-Selenide-Tests

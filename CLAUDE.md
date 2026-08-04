@@ -4,7 +4,7 @@ Conventions for this repository. Read this before adding tests or framework code
 
 ## Stack
 
-Java 17, Gradle (Kotlin DSL), TestNG, Selenide (UI), REST Assured (API), Allure reports, SLF4J + Logback.
+Java 21, Gradle (Kotlin DSL), TestNG, Selenide (UI), REST Assured (API), Allure reports, SLF4J + Logback.
 
 ## Layout
 
@@ -29,15 +29,22 @@ src/test/java/com/example/
 src/test/resources/
   properties/  application.properties + one file per environment (dev/staging/production), merged by Config
   testdata/    JSON/CSV fixtures consumed by utils/DataProvider
-  testng/      suite XML files (testng.xml full, testng-parallel.xml cross-browser, testng-api.xml API-only)
+  testng/      suite XML files:
+    testng.xml           full local suite (UI + API), no hard-coded browser
+    testng-ui.xml         UI only, no hard-coded browser — this is what the CI browser
+                           matrix (test-ui.yml) targets, so -Dbrowser=<name> takes effect
+    testng-api.xml        API only
+    testng-parallel.xml   nightly cross-browser suite; each <test> block hard-codes its
+                           own <parameter name="browser">, so -Dbrowser has no effect here
+                           by design — it runs chrome+firefox+edge in one invocation
 ```
 
 ## Conventions
 
-- **Page Objects** extend `BasePage`, keep locators `private static final By`, and return the next page object from action methods (fluent navigation), e.g. `LoginPage.clickLogin()` returns `DashboardPage`.
+- **Page Objects** extend `BasePage`, keep locators `private static final By`, and return the next page object from action methods (fluent navigation), e.g. `InventoryPage.openProduct()` returns `ProductPage`. Shared regions used by multiple pages (e.g. the header/cart nav) live in their own `<Name>Component` class and are composed into page objects rather than duplicated - see `HeaderComponent`.
 - **API clients** extend `ApiClient`, one client per resource (e.g. `UserApiClient`), methods return `Response` — assertions belong in the test, not the client.
 - **Config access**: always through `com.example.config.Config` (or `BrowserConfig`/`ApiConfig`), never read properties files or `System.getProperty` directly elsewhere. `Config.getProperty` lets `-D` system properties override the merged properties file, so CI can override anything without editing files.
-- **Retries**: attach `retryAnalyzer = RetryAnalyzer.class` to `@Test` only for tests known to be environment-flaky (network, browser timing) — not as a default for every test. Retry count is configured via `retry.count`, not hardcoded.
+- **Retries**: attach `retryAnalyzer = RetryAnalyzer.class` to `@Test` only for tests known to be environment-flaky — not as a blanket default. In this repo every UI/API test class currently targets a real public third-party demo endpoint (no local app/backend exists yet), so blanket retry is the accepted exception here — each class that does it says so in a class-level Javadoc comment. If/when this framework points at a real, reliably-available backend, drop back to attaching retries selectively rather than by default. Retry count is configured via `retry.count`, not hardcoded.
 - **Allure**: annotate test classes with `@Story`, methods with `@Description`. Don't call Allure attachment helpers manually inside tests for failures — `TestListener` already attaches a screenshot + page source automatically on UI test failure.
 - **New environment**: add `<env>.properties` under `src/test/resources/properties/` with only the keys that differ from `application.properties`; `Config` merges it in when run with `-Denvironment=<env>`.
 - **New browser in CI matrix**: confirm the runner actually ships that browser (Safari does not exist on Linux runners) before adding it to a workflow matrix.
@@ -57,7 +64,7 @@ src/test/resources/
 
 1. Add/extend a Page Object under `pages/` if the flow touches a new page.
 2. Add the test class under `src/test/java/com/example/ui/`, extend `BaseWebTest`.
-3. Register the class in the relevant `testng/*.xml` suite `<classes>` block — tests not listed in a suite don't run in CI.
+3. Register the class in `testng/testng-ui.xml` (the per-browser CI matrix runs this one) *and* `testng/testng.xml` (full local suite) — a class only listed in one is only covered by that suite. Add it to `testng/testng-parallel.xml` too if it needs nightly cross-browser coverage, not just a smoke check.
 
 ## Adding a new API test
 

@@ -11,7 +11,7 @@ public final class AllureAttachments {
 
     @Attachment(value = "Screenshot", type = "image/png")
     public static byte[] attachScreenshot() {
-        return Selenide.screenshot(com.codeborne.selenide.OutputType.BYTES);
+        return Selenide.screenshot(org.openqa.selenium.OutputType.BYTES);
     }
 
     @Attachment(value = "Page source", type = "text/plain")

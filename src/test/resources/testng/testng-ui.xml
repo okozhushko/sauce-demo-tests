@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "https://testng.org/testng-1.0.dtd">
-<suite name="Full Suite" thread-count="4" parallel="tests">
+<suite name="UI Suite" thread-count="2" parallel="methods">
 
     <listeners>
         <listener class-name="com.example.listeners.TestListener"/>
@@ -9,19 +9,11 @@
 
     <!-- No <parameter name="browser"> here on purpose: BaseWebTest falls back to
          -Dbrowser (or the "browser" property) when the suite doesn't inject one, which is
-         what lets a CI browser matrix (-Dbrowser=firefox etc.) actually take effect. Use
-         testng-parallel.xml instead when you want a single run to cover chrome+firefox+edge
-         at once via hard-coded per-<test> parameters. -->
+         what lets a CI browser matrix (-Dbrowser=firefox etc.) actually take effect. -->
     <test name="UI Tests" parallel="methods" thread-count="2">
         <classes>
             <class name="com.example.ui.LoginTests"/>
             <class name="com.example.ui.ShoppingCartTests"/>
-        </classes>
-    </test>
-
-    <test name="API Tests" parallel="methods" thread-count="4">
-        <classes>
-            <class name="com.example.api.UserApiTests"/>
         </classes>
     </test>
 

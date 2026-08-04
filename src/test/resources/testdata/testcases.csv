@@ -1,6 +1,0 @@
-username,password,expectedResult
-valid_user,ValidPass123!,success
-invalid_user,WrongPass123!,failure
-locked_user,LockedPass123!,locked
-,ValidPass123!,failure
-standard_user,,failure

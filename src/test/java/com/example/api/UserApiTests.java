@@ -16,8 +16,14 @@ import org.testng.asserts.SoftAssert;
 /**
  * CRUD coverage for the user resource, exercised against a public demo backend
  * (see {@code api.base.url} in application.properties/dev.properties) rather than a real
- * service - see class-level notes in the test framework report for the tradeoffs that implies
- * (fake persistence on create/update, fixed seed data for ids 1-10).
+ * service. That backend (jsonplaceholder.typicode.com) fakes create/update/delete - it
+ * returns a plausible response but doesn't actually persist the change - so these tests
+ * assert on the echoed response shape rather than round-tripping with a follow-up GET.
+ * Get/list/delete-by-id coverage uses real seed data (ids 1-10 only).
+ *
+ * <p>{@code retryAnalyzer} is attached to every test here (not just flaky-prone ones)
+ * because every method makes a real outbound HTTP call to that third-party service -
+ * exactly the kind of environment flakiness retries exist to absorb.
  */
 @Story("User API")
 public class UserApiTests extends BaseTest {

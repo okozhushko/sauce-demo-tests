@@ -1,9 +1,12 @@
 package com.example.api.clients;
 
 import com.example.config.ApiConfig;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.restassured.AllureRestAssured;
 import io.restassured.RestAssured;
 import io.restassured.config.HttpClientConfig;
+import io.restassured.config.ObjectMapperConfig;
 import io.restassured.config.RestAssuredConfig;
 import io.restassured.http.ContentType;
 import io.restassured.response.Response;
@@ -38,7 +41,16 @@ public class ApiClient {
         return RestAssuredConfig.config()
                 .httpClient(HttpClientConfig.httpClientConfig()
                         .setParam("http.connection.timeout", timeoutMs)
-                        .setParam("http.socket.timeout", timeoutMs));
+                        .setParam("http.socket.timeout", timeoutMs))
+                // Response DTOs only model the fields this suite cares about; tolerate extra
+                // fields a real-world response payload may include instead of failing
+                // deserialization on them.
+                .objectMapperConfig(ObjectMapperConfig.objectMapperConfig()
+                        .jackson2ObjectMapperFactory((type, s) -> {
+                            ObjectMapper objectMapper = new ObjectMapper();
+                            objectMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+                            return objectMapper;
+                        }));
     }
 
     protected RequestSpecification given() {

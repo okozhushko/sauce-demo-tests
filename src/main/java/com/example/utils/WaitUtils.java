@@ -20,6 +20,14 @@ import static com.codeborne.selenide.Selenide.$;
  * {@link Config} - there is deliberately no {@code Thread.sleep}/fixed-delay helper.
  * A test that needs a hard sleep to pass is masking a missing wait condition, not a
  * pattern to support.
+ *
+ * <p>{@code BasePage}'s own helpers ({@code click}/{@code fillField}/{@code getText})
+ * already cover ordinary element interaction via {@code shouldBe}, so the current
+ * {@code LoginPage}/{@code DashboardPage} don't need to call this directly - it's here
+ * for flows that need a wait not tied to a single element/action (e.g. waiting on a URL
+ * change, or a timeout different from the configured default). {@code BasePage.isVisible}
+ * intentionally does NOT delegate here: it's a non-throwing check (returns {@code false}
+ * on timeout), while every wait below throws - different contract, not a duplicate.
  */
 public final class WaitUtils {
 

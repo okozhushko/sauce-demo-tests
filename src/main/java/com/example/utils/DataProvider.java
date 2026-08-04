@@ -4,13 +4,8 @@ import com.example.api.models.UserRequest;
 import com.example.api.models.UserResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Static TestNG {@code @DataProvider} suppliers backed by files under
@@ -26,14 +21,11 @@ import java.util.List;
  *     <li>{@code validUserRequests} - one {@link UserRequest} per row, built from users.json
  *         (id omitted) for create/update API test bodies.</li>
  *     <li>{@code userIds} - one {@code Integer} id per row from users.json, for get/delete-by-id tests.</li>
- *     <li>{@code loginCredentials} - one {@code (String username, String password, String expectedResult)}
- *         row per line of testcases.csv, for UI login test parameterization.</li>
  * </ul>
  */
 public final class DataProvider {
 
     private static final String USERS_JSON = "testdata/users.json";
-    private static final String TESTCASES_CSV = "testdata/testcases.csv";
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
     private DataProvider() {
@@ -74,19 +66,6 @@ public final class DataProvider {
         return data;
     }
 
-    @org.testng.annotations.DataProvider(name = "loginCredentials")
-    public static Object[][] loginCredentials() {
-        List<String[]> rows = loadCsvRows(TESTCASES_CSV);
-        Object[][] data = new Object[rows.size()][3];
-        for (int i = 0; i < rows.size(); i++) {
-            String[] row = rows.get(i);
-            data[i][0] = row[0]; // username
-            data[i][1] = row[1]; // password
-            data[i][2] = row[2]; // expectedResult
-        }
-        return data;
-    }
-
     private static UserResponse[] loadUsers() {
         try (InputStream input = DataProvider.class.getClassLoader().getResourceAsStream(USERS_JSON)) {
             if (input == null) {
@@ -96,32 +75,5 @@ public final class DataProvider {
         } catch (IOException e) {
             throw new IllegalStateException("Unable to read test data file: " + USERS_JSON, e);
         }
-    }
-
-    private static List<String[]> loadCsvRows(String fileName) {
-        List<String[]> rows = new ArrayList<>();
-        try (InputStream input = DataProvider.class.getClassLoader().getResourceAsStream(fileName)) {
-            if (input == null) {
-                throw new IllegalStateException("Test data file not found on classpath: " + fileName);
-            }
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(input, StandardCharsets.UTF_8))) {
-                String line;
-                boolean isHeader = true;
-                while ((line = reader.readLine()) != null) {
-                    if (isHeader) {
-                        isHeader = false;
-                        continue;
-                    }
-                    if (line.isBlank()) {
-                        continue;
-                    }
-                    rows.add(line.split(",", -1));
-                }
-            }
-        } catch (IOException e) {
-            throw new IllegalStateException("Unable to read test data file: " + fileName, e);
-        }
-        return rows;
     }
 }

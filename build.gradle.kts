@@ -12,13 +12,18 @@ repositories {
 
 java {
     toolchain {
-        languageVersion.set(JavaLanguageVersion.of(17))
+        languageVersion.set(JavaLanguageVersion.of(21))
     }
 }
 
 val allureVersion = "2.25.0"
+val aspectjVersion = "1.9.22"
+
+val agent by configurations.creating
 
 dependencies {
+    agent("org.aspectj:aspectjweaver:$aspectjVersion")
+
     // Testing Framework
     implementation("org.testng:testng:7.9.0")
 
@@ -54,6 +59,11 @@ tasks.test {
         val suiteFile = System.getProperty("testng.suites", "src/test/resources/testng/testng.xml")
         suites(suiteFile)
     }
+    // Allure's @Attachment/@Step annotations (used by AllureAttachments, ScreenshotUtils)
+    // are woven in at runtime via AspectJ load-time weaving - without this javaagent they
+    // fail with NoSuchMethodError on the generated aspectOf() call the first time one of
+    // those methods actually runs.
+    jvmArgs("-javaagent:${agent.singleFile}")
     systemProperty("browser", System.getProperty("browser", "chrome"))
     systemProperty("environment", System.getProperty("environment", "dev"))
     outputs.upToDateWhen { false }

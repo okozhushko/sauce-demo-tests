@@ -1,8 +1,8 @@
 package com.example.utils;
 
-import com.codeborne.selenide.OutputType;
 import com.codeborne.selenide.Selenide;
 import io.qameta.allure.Attachment;
+import org.openqa.selenium.OutputType;
 
 /**
  * On-demand screenshot capture for UI tests that want to document an intermediate state
