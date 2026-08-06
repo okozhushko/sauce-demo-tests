@@ -13,6 +13,8 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Optional;
 import org.testng.annotations.Parameters;
 
+import java.util.Map;
+
 /**
  * Base class for UI tests. Opens a Selenide-managed browser before each test method and
  * closes it afterwards.
@@ -60,18 +62,42 @@ public class BaseWebTest extends BaseTest {
      * doesn't grant. {@code --no-sandbox} is the standard, widely-documented CI workaround;
      * it's a no-op risk here since every browser instance is a disposable, freshly-launched
      * test session, not a long-lived user browser.
+     *
+     * <p>Chromium-based browsers also need Chrome's own "Change your password" / Safe
+     * Browsing password-leak-detection popup suppressed - it fires natively (outside the
+     * page DOM) whenever a credential pair widely known to be public gets submitted through
+     * a real login form, which is exactly what happens logging into a public QA demo site
+     * with its documented test credentials. That native dialog steals focus and can stall
+     * whatever the test does immediately after login, producing flaky "element not found"
+     * failures downstream that look unrelated to login. {@code PASSWORD_LEAK_PREFS} disables
+     * the specific preference driving it (confirmed live on saucedemo.com, screenshot from
+     * a real run) - {@code safebrowsing.enabled} is deliberately overridden to {@code false}
+     * here even though Selenide's own base options default it to {@code true}.
      */
+    private static final Map<String, Object> PASSWORD_LEAK_PREFS = Map.of(
+            "credentials_enable_service", false,
+            "profile.password_manager_enabled", false,
+            "profile.password_manager_leak_detection", false,
+            "safebrowsing.enabled", false
+    );
+
     private MutableCapabilities buildCapabilities(String browser, boolean headless) {
         return switch (browser) {
             case "chrome" -> {
-                ChromeOptions options = new ChromeOptions().addArguments("--no-sandbox", "--disable-dev-shm-usage");
+                ChromeOptions options = new ChromeOptions()
+                        .addArguments("--no-sandbox", "--disable-dev-shm-usage",
+                                "--disable-features=PasswordLeakDetection,PasswordCheck")
+                        .setExperimentalOption("prefs", PASSWORD_LEAK_PREFS);
                 if (headless) {
                     options.addArguments("--headless=new");
                 }
                 yield options;
             }
             case "edge" -> {
-                EdgeOptions options = new EdgeOptions().addArguments("--no-sandbox", "--disable-dev-shm-usage");
+                EdgeOptions options = new EdgeOptions()
+                        .addArguments("--no-sandbox", "--disable-dev-shm-usage",
+                                "--disable-features=PasswordLeakDetection,PasswordCheck")
+                        .setExperimentalOption("prefs", PASSWORD_LEAK_PREFS);
                 if (headless) {
                     options.addArguments("--headless=new");
                 }

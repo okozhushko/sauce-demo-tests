@@ -1,5 +1,6 @@
 package com.example.pages;
 
+import com.codeborne.selenide.Condition;
 import org.openqa.selenium.By;
 
 /**
@@ -30,7 +31,7 @@ public class ProductPage extends BasePage {
     }
 
     public ProductPage addToCart() {
-        click(CART_BUTTON);
+        clickUntil(element(CART_BUTTON), Condition.text("Remove"));
         return this;
     }
 

@@ -30,7 +30,7 @@ public class InventoryPage extends BasePage {
     }
 
     public InventoryPage addToCart(String productName) {
-        cardFor(productName).find(CART_BUTTON_IN_CARD).shouldBe(Condition.enabled).click();
+        clickUntil(cardFor(productName).find(CART_BUTTON_IN_CARD), Condition.text("Remove"));
         return this;
     }
 
