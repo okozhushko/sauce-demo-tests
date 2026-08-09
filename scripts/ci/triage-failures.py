@@ -24,7 +24,7 @@ import os
 import re
 import sys
 import xml.etree.ElementTree as ET
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 
 DEFAULT_RESULTS_DIR = "build/test-results/test"
 EXCERPT_MAX_LINES = 5
