@@ -37,6 +37,14 @@ jobs:
       - name: Run API tests
         run: ./gradlew test -Dtestng.suites=src/test/resources/testng/testng-api.xml
 
+      # Deterministic, pattern-based triage - no LLM/API call. Parses the JUnit XML
+      # already on disk (Gradle writes it before failing the build) and appends a short
+      # markdown root-cause summary to the run's Job Summary so it's visible without
+      # digging through logs. Only runs when the test step actually failed.
+      - name: Triage failures
+        if: failure()
+        run: python3 scripts/ci/triage-failures.py >> "$GITHUB_STEP_SUMMARY"
+
       - name: Generate Allure report
         if: always()
         run: ./gradlew allureReport
