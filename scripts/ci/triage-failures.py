@@ -29,6 +29,7 @@ from dataclasses import dataclass, field
 DEFAULT_RESULTS_DIR = "build/test-results/test"
 EXCERPT_MAX_LINES = 5
 EXCERPT_MAX_CHARS = 500
+MAX_INLINE_GROUP_METHODS = 8
 
 # Lines that are pure WebDriver capability/environment noise - useful in a full log, not
 # in a 5-line excerpt. Anything from here down in a message gets truncated away.
@@ -253,6 +254,28 @@ def parse_suite(path: str, totals: Totals) -> list[Failure]:
     return failures
 
 
+def group_failures(failures: list[Failure]) -> list[list[Failure]]:
+    """
+    Groups failures that share the same likely root cause: same category, same exception
+    type, same *first line* of the excerpt. Using only the first line (not the whole
+    excerpt) means two invocations of the same underlying failure still group together
+    even when later excerpt lines embed per-invocation volatility (a screenshot path with
+    a timestamp, a session id, a retry count) - exactly the kind of near-duplicate wall a
+    retried/parameterized test produces. Preserves first-seen order of both groups and
+    members within a group, so output stays deterministic across runs.
+    """
+    groups: dict[tuple[str, str, str], list[Failure]] = {}
+    order: list[tuple[str, str, str]] = []
+    for f in failures:
+        key_line = f.excerpt.splitlines()[0] if f.excerpt else ""
+        key = (f.category, f.exc_type, key_line)
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(f)
+    return [groups[key] for key in order]
+
+
 def render_markdown(failures: list[Failure], totals: Totals, results_dir: str, files_found: bool) -> str:
     lines: list[str] = []
     lines.append("## Failure Triage (automated, pattern-based)")
@@ -289,15 +312,36 @@ def render_markdown(failures: list[Failure], totals: Totals, results_dir: str, f
     lines.append(verdict)
     lines.append("")
 
-    for f in failures:
-        lines.append(f"- **`{f.classname}.{f.method}`** — {f.category}")
-        lines.append(f"  - *{f.explanation}*")
-        lines.append(f"  - `{f.exc_type}`")
-        excerpt_block = "\n".join(f"    {line}" for line in f.excerpt.splitlines()) or "    (no message captured)"
+    # Group failures that share the same root cause (category + exception type + excerpt) -
+    # e.g. retries/data-provider variants all failing on the same bad host or the same
+    # locator. Without this, one root cause with N retried/parameterized invocations turns
+    # into a wall of near-identical bullets instead of a short, readable summary.
+    for group in group_failures(failures):
+        first = group[0]
+        excerpt_block = (
+            "\n".join(f"    {line}" for line in first.excerpt.splitlines()) or "    (no message captured)"
+        )
+
+        if len(group) == 1:
+            lines.append(f"- **`{first.classname}.{first.method}`** — {first.category}")
+        else:
+            lines.append(f"- **{len(group)} tests** — {first.category}")
+
+        lines.append(f"  - *{first.explanation}*")
+        lines.append(f"  - `{first.exc_type}`")
         lines.append("  - Excerpt:")
         lines.append("    ```")
         lines.append(excerpt_block.replace("    ```", "```"))
         lines.append("    ```")
+
+        if len(group) > 1:
+            method_list = ", ".join(f"`{f.classname}.{f.method}`" for f in group)
+            if len(group) > MAX_INLINE_GROUP_METHODS:
+                shown = ", ".join(f"`{f.classname}.{f.method}`" for f in group[:MAX_INLINE_GROUP_METHODS])
+                lines.append(f"  - Affected tests: {shown}, and {len(group) - MAX_INLINE_GROUP_METHODS} more")
+            else:
+                lines.append(f"  - Affected tests: {method_list}")
+
         lines.append("")
 
     return "\n".join(lines)

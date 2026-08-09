@@ -23,3 +23,7 @@ allure-report/
 
 # Logs
 *.log
+
+# Python (scripts/ci/triage-failures.py)
+__pycache__/
+*.pyc
