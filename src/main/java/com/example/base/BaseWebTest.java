@@ -37,6 +37,10 @@ public class BaseWebTest extends BaseTest {
     public void setUpBrowser(@Optional String browser) {
         String resolvedBrowser = (browser != null && !browser.isBlank()) ? browser : BrowserConfig.getBrowser();
 
+        if (resolvedBrowser == null || resolvedBrowser.isBlank()) {
+            throw new IllegalStateException("Browser configuration is null or blank. Check BrowserConfig.getBrowser() and application.properties");
+        }
+
         boolean headless = BrowserConfig.isHeadless(resolvedBrowser);
 
         Configuration.browser = resolvedBrowser;

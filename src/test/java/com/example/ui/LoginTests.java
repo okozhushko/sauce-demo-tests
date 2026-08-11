@@ -23,7 +23,7 @@ import org.testng.annotations.Test;
 @Story("Authentication")
 public class LoginTests extends BaseWebTest {
 
-    @Test(retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"smoke", "regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("A standard user's valid credentials should sign in and land on the inventory page")
     public void testValidLogin() {
         InventoryPage inventoryPage = new LoginPage()
@@ -34,7 +34,7 @@ public class LoginTests extends BaseWebTest {
                 "A successful login should land on the inventory page showing the product catalog");
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("A locked-out user's credentials should be rejected with the site's lockout error")
     public void testInvalidLogin() {
         LoginPage loginPage = new LoginPage()
