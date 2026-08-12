@@ -3,7 +3,7 @@
 <suite name="API Suite" thread-count="4" parallel="methods">
 
     <listeners>
-        <listener class-name="com.example.listeners.TestListener"/>
+        <listener class-name="com.example.listeners.EnhancedTestListener"/>
         <listener class-name="io.qameta.allure.testng.AllureTestNg"/>
     </listeners>
 

@@ -26,7 +26,7 @@ import org.testng.annotations.Test;
 public class ShoppingCartTests extends BaseWebTest {
 
     private static final String PRODUCT_NAME = "Sauce Labs Backpack";
-    private static final String PRODUCT_PRICE = "$29.99";
+    private static final String PRODUCT_PRICE = "$29.990";
 
     @Test(groups = {"smoke", "regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("The inventory page should display the known catalog products after login")
@@ -38,7 +38,7 @@ public class ShoppingCartTests extends BaseWebTest {
     }
 
     @Test(groups = {"regression"}, retryAnalyzer = RetryAnalyzer.class)
-    @Description("Adding a product from its detail page should update the header cart count")
+    @Description("Adding a product from its detail page should update the header cart count mmm")
     public void testAddingProductToCartUpdatesCartCount() {
         InventoryPage inventoryPage = loginAsStandardUser();
         Assert.assertEquals(inventoryPage.getCartItemCount(), 0, "Cart should start empty");
