@@ -28,7 +28,7 @@ public class ShoppingCartTests extends BaseWebTest {
     private static final String PRODUCT_NAME = "Sauce Labs Backpack";
     private static final String PRODUCT_PRICE = "$29.99";
 
-    @Test(retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"smoke", "regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("The inventory page should display the known catalog products after login")
     public void testInventoryPageDisplaysProducts() {
         InventoryPage inventoryPage = loginAsStandardUser();
@@ -37,7 +37,7 @@ public class ShoppingCartTests extends BaseWebTest {
                 "Inventory page should display the '%s' product card".formatted(PRODUCT_NAME));
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("Adding a product from its detail page should update the header cart count")
     public void testAddingProductToCartUpdatesCartCount() {
         InventoryPage inventoryPage = loginAsStandardUser();
@@ -58,7 +58,7 @@ public class ShoppingCartTests extends BaseWebTest {
                 "Header cart count should be 1 after adding a product");
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("A product added to the cart should appear as a line item on the cart page")
     public void testCartPageReflectsAddedProduct() {
         InventoryPage inventoryPage = loginAsStandardUser();
@@ -74,7 +74,7 @@ public class ShoppingCartTests extends BaseWebTest {
                 "Cart line item quantity should be 1");
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("Removing a product from the cart page should empty the cart again")
     public void testRemovingProductFromCartEmptiesCart() {
         InventoryPage inventoryPage = loginAsStandardUser();
@@ -88,7 +88,7 @@ public class ShoppingCartTests extends BaseWebTest {
         Assert.assertEquals(cartPage.getCartItemCount(), 0, "Header cart count should be 0 after removal");
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"smoke", "regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("A freshly logged-in session's cart page should show the empty-cart state")
     public void testEmptyCartShowsEmptyState() {
         InventoryPage inventoryPage = loginAsStandardUser();

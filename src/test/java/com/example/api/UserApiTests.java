@@ -35,7 +35,7 @@ public class UserApiTests extends BaseTest {
         userApiClient = new UserApiClient();
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class,
+    @Test(groups = {"smoke", "regression"}, retryAnalyzer = RetryAnalyzer.class,
             dataProvider = "userIds", dataProviderClass = com.example.utils.DataProvider.class)
     @Description("Get user by ID should return 200 and a user matching the requested id")
     public void testGetUserById(Integer id) {
@@ -52,7 +52,7 @@ public class UserApiTests extends BaseTest {
         softAssert.assertAll();
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("Get user by a non-existent ID should return 404")
     public void testGetUserById_notFound() {
         Response response = userApiClient.getUserById(999999);
@@ -60,7 +60,7 @@ public class UserApiTests extends BaseTest {
         Assert.assertEquals(response.getStatusCode(), 404);
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class)
+    @Test(groups = {"smoke", "regression"}, retryAnalyzer = RetryAnalyzer.class)
     @Description("Listing users should return 200 and a non-empty collection")
     public void testListUsers() {
         Response response = userApiClient.listUsers();
@@ -73,7 +73,7 @@ public class UserApiTests extends BaseTest {
         Assert.assertNotNull(users[0].getName());
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class,
+    @Test(groups = {"regression"}, retryAnalyzer = RetryAnalyzer.class,
             dataProvider = "validUserRequests", dataProviderClass = com.example.utils.DataProvider.class)
     @Description("Creating a user should return 201 with an id and echo the submitted fields")
     public void testCreateUser(UserRequest userRequest) {
@@ -90,7 +90,7 @@ public class UserApiTests extends BaseTest {
         softAssert.assertAll();
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class,
+    @Test(groups = {"regression"}, retryAnalyzer = RetryAnalyzer.class,
             dataProvider = "users", dataProviderClass = com.example.utils.DataProvider.class)
     @Description("Updating an existing user should return 200 and reflect the new values")
     public void testUpdateUser(UserResponse existingUser) {
@@ -112,7 +112,7 @@ public class UserApiTests extends BaseTest {
         softAssert.assertAll();
     }
 
-    @Test(retryAnalyzer = RetryAnalyzer.class,
+    @Test(groups = {"regression"}, retryAnalyzer = RetryAnalyzer.class,
             dataProvider = "userIds", dataProviderClass = com.example.utils.DataProvider.class)
     @Description("Deleting a user should return 200")
     public void testDeleteUser(Integer id) {
