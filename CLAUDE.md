@@ -47,15 +47,17 @@ src/test/resources/
 - **Retries**: attach `retryAnalyzer = RetryAnalyzer.class` to `@Test` only for tests known to be environment-flaky — not as a blanket default. In this repo every UI/API test class currently targets a real public third-party demo endpoint (no local app/backend exists yet), so blanket retry is the accepted exception here — each class that does it says so in a class-level Javadoc comment. If/when this framework points at a real, reliably-available backend, drop back to attaching retries selectively rather than by default. Retry count is configured via `retry.count`, not hardcoded.
 - **Allure**: annotate test classes with `@Story`, methods with `@Description`. Don't call Allure attachment helpers manually inside tests for failures — `TestListener` already attaches a screenshot + page source automatically on UI test failure.
 - **New environment**: add `<env>.properties` under `src/test/resources/properties/` with only the keys that differ from `application.properties`; `Config` merges it in when run with `-Denvironment=<env>`.
-- **New browser in CI matrix**: confirm the runner actually ships that browser (Safari does not exist on Linux runners) before adding it to a workflow matrix.
+- **New browser in CI matrix**: confirm the runner actually ships that browser (Safari does not exist on Linux runners; Safari is supported on macOS runners only) before adding it to a workflow matrix.
+- **Safari testing**: Safari WebDriver is less stable than Chrome/Firefox/Edge. Tests running on Safari use `SafariRetryAnalyzer` (3 retries instead of 2) and run with reduced parallelism (thread-count=1 in parallel suites). Safari tests run locally on macOS with `-Dbrowser=safari` and in nightly cross-browser CI via `testng-parallel.xml`.
 
 ## Running tests
 
 ```bash
 ./gradlew test                                                            # default suite, chrome, dev
 ./gradlew test -Dbrowser=firefox                                          # UI tests on a specific browser
+./gradlew test -Dbrowser=safari                                           # UI tests on Safari (macOS only)
 ./gradlew test -Dtestng.suites=src/test/resources/testng/testng-api.xml   # API suite only
-./gradlew test -Dtestng.suites=src/test/resources/testng/testng-parallel.xml  # cross-browser parallel
+./gradlew test -Dtestng.suites=src/test/resources/testng/testng-parallel.xml  # cross-browser parallel (chrome, firefox, edge, safari)
 ./gradlew test -Denvironment=staging                                      # against staging
 ./gradlew allureReport && ./gradlew allureServe                           # view report
 ```
