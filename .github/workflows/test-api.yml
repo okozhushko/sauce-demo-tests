@@ -5,6 +5,7 @@ on:
     branches: [main, develop]
   pull_request:
     branches: [main, develop]
+  workflow_dispatch: {}
 
 # Cancel superseded runs on the same branch/PR so we don't burn minutes on stale commits.
 concurrency:
